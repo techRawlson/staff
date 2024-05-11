@@ -1,0 +1,10 @@
+com\Staff\Controller\StaffController.class
+com\Staff\Repository\StaffRepository.class
+com\Staff\RestClient\MyRestClient.class
+com\Staff\Repository\SubjectRepository.class
+com\Staff\StaffApplication.class
+com\Staff\Service\SubjectService.class
+com\Staff\Service\StaffService.class
+com\Staff\Config\CorsConfig.class
+com\Staff\Entities\Staff.class
+com\Staff\Entities\Subject.class
