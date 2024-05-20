@@ -1,0 +1,41 @@
+version: "3.8"
+services:
+  login:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    restart: always
+    environment:
+      - spring_datasource_url=jdbc:mysql://db/schoolmanagement?enabledTLSProtocols=TLSv1.2
+      - spring.datasource.password=root
+      - eureka.client.serviceUrl.defaultZone=http://172.17.96.1:8761/eureka
+
+  student:
+    image: ishanm1506/student:v1
+    depends_on:
+      - db
+    ports:
+      - "8082:8082"
+    restart: always
+    environment:
+      - spring_datasource_url=jdbc:mysql://db/studentdata?enabledTLSProtocols=TLSv1.2
+      - spring.datasource.password=root
+      - eureka.client.serviceUrl.defaultZone=http://172.17.96.1:8761/eureka
+
+  db:
+    image: ishanm1506/smdb-mysql:v1
+    healthcheck:
+      test: mysql timetable --user=root --password='root' --silent --execute "SELECT 1;"
+      interval: 10s
+      timeout: 60s
+      retries: 3
+      start_period: 20s
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+

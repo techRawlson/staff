@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  login:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    environment:
+      - spring_datasource_url=jdbc:mysql://db/schoolmanagement?enabledTLSProtocols=TLSv1.2
+      - spring.datasource.password=root
+      - eureka.client.serviceUrl.defaultZone=http://172.17.96.1:8761/eureka
+
+  db:
+    image: ishanm1506/smdb-mysql:v1
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+
