@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.Staff.Controller.ResourceNotFoundException;
 import com.Staff.Entities.Staff;
 import com.Staff.Entities.StaffDTO;
 import com.Staff.Repository.StaffImageRepository;
@@ -127,5 +128,16 @@ public class StaffService {
         // Delete the student
         staffRepository.delete(staff);
     }
+    public List<String> getSubjectsByStaffId(Long staffId) {
+        Optional<Staff> optionalStaff = staffRepository.findById(staffId);
+        if (optionalStaff.isPresent()) {
+            Staff staff = optionalStaff.get();
+            return staff.getSubjects();
+        } else {
+            // Handle case where staff with given ID is not found
+            throw new ResourceNotFoundException("Staff not found with id: " + staffId);
+        }
+    }
+
 
 }

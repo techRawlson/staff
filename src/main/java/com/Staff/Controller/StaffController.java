@@ -399,6 +399,21 @@ public ResponseEntity<?> createSubject(@RequestParam("name") String name) {
                     .body("Failed to delete staff with ID " + id + ": " + e.getMessage());
         }
     }
+    @GetMapping("/{staffId}/subjects")
+    public ResponseEntity<List<String>> getSubjectsByStaffId(@PathVariable Long staffId) {
+        try {
+            List<String> subjects = staffService.getSubjectsByStaffId(staffId);
+            return ResponseEntity.ok(subjects);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            // Log the exception for debugging purposes
+            // You can add a logger here
+            e.printStackTrace();
+            // Return an appropriate error response
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
 }
 

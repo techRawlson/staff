@@ -10,8 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.io.IOException;
+import java.time.LocalDateTime;
+
 @Service
 public class ImageService {
+
     @Autowired
     private StaffRepository staffRepository;
 
@@ -19,36 +23,57 @@ public class ImageService {
     private StaffImageRepository staffImageRepository;
 
     public void saveImage(Long staffId, MultipartFile file) throws IOException {
-        Staff staff = staffRepository.findById(staffId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+        Staff staff = findStaffById(staffId);
+        validateFileSize(file);
 
+        StaffImage staffImage = createStaffImage(staff, file);
+        staffImageRepository.save(staffImage);
+    }
+
+    public void updateImage(Long staffId, MultipartFile file) throws IOException {
+        Staff staff = findStaffById(staffId);
+        validateFileSize(file);
+
+        StaffImage staffImage = findStaffImageById(staffId);
+        updateStaffImage(staffImage, file);
+        staffImageRepository.save(staffImage);
+    }
+
+    public byte[] getImageByStaffId(Long staffId) {
+        StaffImage staffImage = findStaffImageById(staffId);
+        return staffImage.getImage();
+    }
+
+    // Private helper methods
+
+    private Staff findStaffById(Long staffId) {
+        return staffRepository.findById(staffId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff member not found"));
+    }
+
+    private StaffImage findStaffImageById(Long staffId) {
+        return staffImageRepository.findByStaffId(staffId)
+                .orElseThrow(() -> new IllegalArgumentException("Image not found for staff member"));
+    }
+
+    private void validateFileSize(MultipartFile file) throws IOException {
+        // Implement file size validation logic here
+    }
+
+    private StaffImage createStaffImage(Staff staff, MultipartFile file) throws IOException {
         StaffImage staffImage = new StaffImage();
         staffImage.setImage(file.getBytes());
         staffImage.setFilename(file.getOriginalFilename());
         staffImage.setMimetype(file.getContentType());
         staffImage.setUploadDate(LocalDateTime.now());
         staffImage.setStaff(staff);
-
-        staffImageRepository.save(staffImage);
+        return staffImage;
     }
-    public void updateImage(Long staffId, MultipartFile file) throws IOException {
-        Staff staff = staffRepository.findById(staffId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
-        StaffImage staffImage = staffImageRepository.findByStaffId(staffId)
-                .orElseThrow(() -> new IllegalArgumentException("Image not found for student"));
-
+    private void updateStaffImage(StaffImage staffImage, MultipartFile file) throws IOException {
         staffImage.setImage(file.getBytes());
         staffImage.setFilename(file.getOriginalFilename());
         staffImage.setMimetype(file.getContentType());
         staffImage.setUploadDate(LocalDateTime.now());
-
-        staffImageRepository.save(staffImage);
-    }
-    public byte[] getImageByStaffId(Long staffId) {
-        StaffImage studentImage = staffImageRepository.findByStaffId(staffId)
-                .orElseThrow(() -> new IllegalArgumentException("Image not found for student"));
-
-        return studentImage.getImage();
     }
 }
