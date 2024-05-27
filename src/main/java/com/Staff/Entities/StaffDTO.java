@@ -12,13 +12,14 @@ public class StaffDTO {
     private String name;
     private String gender;
     private Long mobile;
-    private LocalDate dateOfJoining;
+    private String dateOfJoining;
     private String address;
     private LocalDate dob;
     private String designation;
     private String email;
     private String staffId;
     private String department;
+    private String approver;
 
     public StaffDTO(Staff staff) {
         this.id = staff.getId();
@@ -32,5 +33,6 @@ public class StaffDTO {
         this.email = staff.getEmail();
         this.staffId = staff.getStaffId();
         this.department = staff.getDepartment();
+        this.approver=staff.getApprover();
     }
 }

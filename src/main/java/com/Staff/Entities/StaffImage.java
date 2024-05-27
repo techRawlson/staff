@@ -13,6 +13,7 @@ public class StaffImage {
     private Long id;
 
     @Lob
+    @Column(columnDefinition = "LONGBLOB")
     private byte[] image;
     private String filename;
     private String mimetype;

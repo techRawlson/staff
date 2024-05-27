@@ -19,12 +19,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-//http://192.168.1.10:8083/api/staff
+//http://localhost:8083/api/staff
 @RestController
 @RequestMapping("/api/staff")
 public class StaffController {
@@ -153,52 +157,70 @@ public class StaffController {
 
 
 
+
     @PostMapping("/create-staff")
     public ResponseEntity<?> createStaff(@RequestParam("name") String name,
                                          @RequestParam("gender") String gender,
                                          @RequestParam("mobile") Long mobile,
                                          @RequestParam("address") String address,
                                          @RequestParam("designation") String designation,
-                                         @RequestParam("date_of_joining") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date_of_joining,
-                                         @RequestParam("staff_id") String staff_id,
+                                         @RequestParam("dateOfJoining") String dateOfJoiningStr,
                                          @RequestParam("department") String department,
                                          @RequestParam("dob") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dob,
                                          @RequestParam("email") String email,
-                                         @RequestParam(value = "subjects", required = false) List<String> subjects) throws IOException {
+                                         @RequestParam("approver") String approver,
+                                         @RequestParam(value = "staffId") String customStaffId,
+                                         @RequestParam(value = "subjects", required = false) List<String> subjects) {
 
         // Check if the email already exists
-        if (staffRepository.existsByEmail(email) || dob.isEqual(date_of_joining)) {
+        if (staffRepository.existsByEmail(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Email already exists");
         }
-        // Check if the birthdate is before the joining date
-        if (dob.isAfter(date_of_joining) ) {
+
+        // Convert dateOfJoining from String to LocalDate
+        LocalDate dateOfJoining;
+        try {
+            dateOfJoining = LocalDate.parse(dateOfJoiningStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid date format for dateOfJoining. Please use yyyy-MM-dd.");
+        }
+
+        // Check if the birthdate is after the joining date
+        if (dob.isAfter(dateOfJoining)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Birthdate must be before the joining date");
         }
 
-        // Check if the staff ID already exists
-        if (staffRepository.existsByStaffId(staff_id)) {
+        // If custom staff ID is provided by the user, use it
+        if (customStaffId != null) {
+            // Check if the custom staff ID already exists
+            if (staffRepository.existsByStaffId(customStaffId)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Custom staff ID already exists");
+            }
+        } else {
+            // If no custom staff ID is provided, return an error
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Staff ID already exists");
+                    .body("Custom staff ID is required");
         }
 
-        // Save the profile picture if provided
-
-
         // Create the staff object
-        Staff staff=new Staff();
+        Staff staff = new Staff();
         staff.setName(name);
         staff.setGender(gender);
         staff.setMobile(mobile);
         staff.setAddress(address);
         staff.setDob(dob);
         staff.setDesignation(designation);
-        staff.setStaffId(staff_id);
+        staff.setStaffId(customStaffId);
         staff.setDepartment(department);
         staff.setEmail(email);
-        staff.setDateOfJoining(date_of_joining);
+        staff.setDateOfJoining(dateOfJoiningStr); // Using the String dateOfJoining
+        staff.setApprover(approver);
 
+        // Generate and set a random password (handled in the entity)
 
         // Associate subjects with the staff member if provided
         if (subjects != null && !subjects.isEmpty()) {
@@ -212,10 +234,6 @@ public class StaffController {
     }
 
 
-
-
-
-
     @GetMapping("/{id}")
     public ResponseEntity<?> getStaffById(@PathVariable Long id) {
         Optional<Staff> staffOptional = staffService.getStaffById(id);
@@ -227,7 +245,11 @@ public class StaffController {
     }
 
 
-
+    private String generateRandomStaffId() {
+        // Generate a random staff ID using some logic
+        // For example, you can use UUID
+        return UUID.randomUUID().toString();
+    }
 
 //    @PutMapping("/update/{id}")
 //    public Staff updateStaff(@PathVariable Long id, @RequestBody Staff staffDetails) {
@@ -269,35 +291,42 @@ public class StaffController {
 
 
     @PutMapping("update/{id}")
-    public ResponseEntity<Staff> updateStudentById(@PathVariable("id") Long id,
+    public ResponseEntity<?> updateStudentById(@PathVariable("id") Long id,
                                                    @RequestParam(value = "name",required = false) String name,
                                                    @RequestParam(value = "gender",required = false) String gender,
                                                    @RequestParam(value = "mobile",required = false) Long mobile,
                                                    @RequestParam(value = "address",required = false) String address,
                                                    @RequestParam(value = "designation",required = false)String designation,
-                                                   @RequestParam(value = "date_of_joining",required = false) LocalDate date_of_joining,
+                                                   @RequestParam(value = "dateOfJoining",required = false) LocalDate dateOfJoining,
                                                    @RequestParam(value = "staff_id",required = false) String staff_id,
                                                    @RequestParam(value = "department",required = false) String department,
                                                    @RequestParam(value = "dob",required = false) LocalDate dob,
+                                                    @RequestParam(value = "approver",required = false)String approver,
                                                    @RequestParam(value = "email",required = false) String email,
                                                    @RequestParam(value = "subjects", required = false) List<String> subjects)
-
-
                                                     {
         Optional<Staff> optionalStaff = staffRepository.findById(id);
         if (optionalStaff.isPresent()) {
             Staff existingStaff = optionalStaff.get();
 
             // Update the image if provided
-
-
-
             // Update other student fields if provided
             if (name != null) {
                 existingStaff.setName(name);
             }
 
+            if(dob.isAfter(dateOfJoining)){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Birthdate must be before the joining date");
+            }
 
+            if (staffRepository.existsByStaffId(staff_id)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Staff ID already exists");
+            }
+            if(approver!=null){
+                existingStaff.setApprover(approver);
+            }
             if (gender != null) {
                 existingStaff.setGender(gender);
             }
@@ -313,9 +342,7 @@ public class StaffController {
             if (department != null) {
                 existingStaff.setDepartment(department);
             }
-            if (date_of_joining != null) {
-                existingStaff.setDateOfJoining(date_of_joining);
-            }
+
             if (staff_id != null) {
                 existingStaff.setStaffId(staff_id);
             }
@@ -323,19 +350,9 @@ public class StaffController {
                 existingStaff.setDesignation(designation);
             }
 
-
-
-
-            if (dob != null) {
-                existingStaff.setDob(dob);
-            }
-
             if (email != null) {
                 existingStaff.setEmail(email);
             }
-
-
-
             // Save the updated student object to the database
             Staff savedStudent = staffRepository.save(existingStaff);
             return ResponseEntity.ok().body(savedStudent);

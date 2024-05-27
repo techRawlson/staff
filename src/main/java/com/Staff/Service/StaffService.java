@@ -48,6 +48,7 @@ public class StaffService {
         staff.setEmail(dto.getEmail());
         staff.setStaffId(dto.getStaffId());
         staff.setDepartment(dto.getDepartment());
+        staff.setApprover(dto.getApprover());
         return staff;
     }
     @Value("${api.endpoint.url}")
@@ -67,15 +68,16 @@ public class StaffService {
                 String name = row.getCell(0).getStringCellValue();
                 String gender = row.getCell(1).getStringCellValue();
                 Long mobile = (long) row.getCell(2).getNumericCellValue();
-                LocalDate dateOfJoining = row.getCell(3).getLocalDateTimeCellValue().toLocalDate(); // Assuming date of joining is in date format
+                String dateOfJoining = row.getCell(3).getStringCellValue();// Assuming date of joining is in date format
                 String address = row.getCell(4).getStringCellValue();
                 LocalDate dob = row.getCell(5).getLocalDateTimeCellValue().toLocalDate(); // Assuming date of birth is in date format
                 String designation = row.getCell(6).getStringCellValue();
                 String email = row.getCell(7).getStringCellValue();
                 String staffId = row.getCell(8).getStringCellValue();
                 String department = row.getCell(9).getStringCellValue();
+                String approver=row.getCell(10).getStringCellValue();
 
-                staff.add(new Staff(name,gender,mobile,dateOfJoining,address,dob,designation,email,staffId,department));
+                staff.add(new Staff(name,gender,mobile,dateOfJoining,address,dob,designation,email,staffId,department,approver));
 
             }
             RestTemplate restTemplate=new RestTemplate();
