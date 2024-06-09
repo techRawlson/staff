@@ -4,6 +4,7 @@ import com.Staff.Entities.LoginRecord;
 import com.Staff.Entities.StaffCredentials;
 import com.Staff.Repository.LoginRecordRepository;
 import com.Staff.Repository.StaffRepository;
+import com.Staff.Service.LoginCredentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,8 @@ public class StaffLoginController {
     private LoginRecordRepository loginRecordRepository;
     @Autowired
     private StaffRepository staffRepository;
-
+    @Autowired
+    private LoginCredentialService staffService;
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody StaffCredentials staffCredentials) {
@@ -39,16 +41,20 @@ public class StaffLoginController {
                 loginRecordRepository.save(loginRecord);
             }
 
-            // Include userId in the response
+            // Retrieve approver name
+            String approverName = staffService.getApproverNameByStaffId(staffCredentials.getStaffId());
+            String staffName= staffService.getStaffNameByStaffId(staffCredentials.getStaffId());
+            // Include userId and approver name in the response
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("message", "Login successful!");
             responseBody.put("userId", staffCredentials.getStaffId());
+            responseBody.put("approverName", approverName);
+            responseBody.put("staffName", staffName);
             return ResponseEntity.ok(responseBody);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials. Please try again.");
         }
     }
-
     private boolean isValidStaff(StaffCredentials staffCredentials) {
         // Implement logic to check if the staff ID and password are valid
         // For example, you can use StaffRepository to validate credentials

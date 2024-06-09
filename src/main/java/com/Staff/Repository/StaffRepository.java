@@ -19,4 +19,7 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
     @Query("SELECT COUNT(s) > 0 FROM Staff s WHERE s.staffId = :staffId AND s.password = :password")
     boolean isValidStaff(@Param("staffId") String staffId, @Param("password") String password);
     Optional<StaffCredentials> findByStaffIdAndPassword(String staffId, String password);
+    Optional<Staff> findByStaffId(String staffId); // Use String for staffId
+
+
 }

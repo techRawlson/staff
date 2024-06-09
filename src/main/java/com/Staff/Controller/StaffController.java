@@ -431,6 +431,14 @@ public ResponseEntity<?> createSubject(@RequestParam("name") String name) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
+    @GetMapping("/staff/{staffId}")
+    public ResponseEntity<?> getStaffByStaffId(@PathVariable String staffId) {
+        Optional<Staff> staffOptional = staffService.getByStaffId(staffId);
+        if (staffOptional.isPresent()) {
+            return ResponseEntity.ok(staffOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
 

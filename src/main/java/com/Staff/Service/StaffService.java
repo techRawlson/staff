@@ -141,5 +141,7 @@ public class StaffService {
         }
     }
 
-
+    public Optional<Staff>getByStaffId(String staffId){
+            return staffRepository.findByStaffId(staffId);
+    }
 }
